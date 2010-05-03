@@ -1,3 +1,4 @@
+#!/usr/local/bin/python2.5
 import lxml.html
 import mechanize
 import random
@@ -9,7 +10,7 @@ from icalendar import UTC
 
 import config
 
-MAX_WAIT_TIME = 2
+MAX_WAIT_TIME = 11
 SLEEP_BEFORE_REQUESTS = True
 
 def get_from_web(url):
@@ -46,7 +47,7 @@ def read_category_listing(base_href, url):
 
         # Within each category of event, loop over the events
         event_links = cat_page_tree.cssselect('a.eventtitle')
-        for event_link in event_links[:20]:
+        for event_link in event_links[:80]:
             event_page_url = base_href + event_link.attrib['href']
             read_event_page(event_page_url)
 
@@ -90,7 +91,7 @@ def read_event_page(url):
     event['description'] = "%s\n\nCategory: %s\nURL: %s" % (
             description,
             get_text_by_class('cattitle'),
-            event_page_url
+            url
             )
 
     # Add to a growing list of dictionaries
