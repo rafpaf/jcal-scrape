@@ -7,6 +7,8 @@ from icalendar import Calendar, Event
 import datetime 
 from icalendar import UTC
 
+import config
+
 MAX_WAIT_TIME = 2
 SLEEP_BEFORE_REQUESTS = True
 
@@ -33,7 +35,7 @@ events = []
 def read_category_listing(base_href, url):
     cat_listing_url = base_href + url
     cat_listing_page = get_from_web(cat_listing_url)
-    cat_listing_page_tree = lxml.html.document_fromstring(response)
+    cat_listing_page_tree = lxml.html.document_fromstring(cat_listing_page)
 
     # Loop over the various categories of event
     category_links = cat_listing_page_tree.cssselect('a.cattitle')
@@ -101,7 +103,7 @@ read_category_listing(base_href, category_listing_page_url)
 # Then run something like this:
 #read_event_page("file:///tmp/borges.html")
 
-ical = open('princeton-philosophy.ical', 'w')
+ical = open(config.ICAL_OUTPUT_FILE, 'w')
 
 cal = Calendar()
 
