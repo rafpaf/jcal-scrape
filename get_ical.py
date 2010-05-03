@@ -1,4 +1,3 @@
-#!/usr/local/bin/python2.5
 import lxml.html
 import mechanize
 import random
