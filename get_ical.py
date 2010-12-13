@@ -1,6 +1,9 @@
+#!/usr/local/bin/python2.4
+
 import lxml.html
 import mechanize
 import random
+import time
 from time import sleep
 
 from icalendar import Calendar, Event
@@ -9,8 +12,17 @@ from icalendar import UTC
 
 import config
 
-MAX_WAIT_TIME = 11
+# Wait a random amount of time between page visits?
 SLEEP_BEFORE_REQUESTS = True
+
+# Maximum wait time between page visits
+MAX_WAIT_TIME = 11
+
+# Maximum number of categories to visit
+MAX_CATEGORIES = None
+
+# Maximum number of events, per category, to scrape
+MAX_EVENTS_PER_CATEGORY = None
 
 def get_from_web(url):
 
@@ -39,14 +51,16 @@ def read_category_listing(base_href, url):
 
     # Loop over the various categories of event
     category_links = cat_listing_page_tree.cssselect('a.cattitle')
-    for cat_link in category_links:
+
+    for cat_link in category_links[:MAX_CATEGORIES]:
         cat_page_url = base_href + cat_link.attrib['href']
         cat_page = get_from_web(cat_page_url)
         cat_page_tree = lxml.html.document_fromstring(cat_page)
 
         # Within each category of event, loop over the events
         event_links = cat_page_tree.cssselect('a.eventtitle')
-        for event_link in event_links[:80]:
+
+        for event_link in event_links[:MAX_EVENTS_PER_CATEGORY]:
             event_page_url = base_href + event_link.attrib['href']
             read_event_page(event_page_url)
 
@@ -54,7 +68,7 @@ def read_event_page(url):
     event_page = get_from_web(url)
     event_page_tree = lxml.html.document_fromstring(event_page)
 
-    # Extract information about the event.
+    # We will extract information about the event and put it here.
     event = {}
 
     # This will be useful along the way.
@@ -106,9 +120,16 @@ read_category_listing(base_href, category_listing_page_url)
 ical = open(config.ICAL_OUTPUT_FILE, 'w')
 
 cal = Calendar()
+cal.add('X-WR-CALNAME', 'Princeton Philosophy Events')
 
 def to_datetime(string):
-    return datetime.datetime.strptime(string, "%A, %B %d, %Y At %I:%M %p ")
+    # Thanks to Rod Hyde, who answered the question, "How do you convert a
+    # python time.struct_time object into a datetime object?" at StackOverflow.
+    # <http://stackoverflow.com/questions/1697815/how-do-you-convert-a-python-time-struct-time-object-into-a-datetime-object>
+    print string
+    struct = time.strptime(string, "%A, %B %d, %Y At %I:%M %p ")
+    seconds_since_the_epoch = time.mktime(struct)
+    return datetime.datetime.fromtimestamp(seconds_since_the_epoch)
 
 for event_dict in events:
     event = Event()
@@ -119,5 +140,10 @@ for event_dict in events:
     event.add('description', event_dict['description'])
     cal.add_component(event)
 
-ical.write(cal.as_string())
+string = cal.as_string()
+
+# Hack to make the ical validate
+string = string.replace(';VALUE=DATE','')
+
+ical.write(string)
 ical.close()
