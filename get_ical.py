@@ -13,7 +13,7 @@ from icalendar import UTC
 import config
 
 # Wait a random amount of time between page visits?
-SLEEP_BEFORE_REQUESTS = True
+SLEEP_BEFORE_REQUESTS = False #True
 
 # Maximum wait time between page visits
 MAX_WAIT_TIME = 11
@@ -126,10 +126,20 @@ def to_datetime(string):
     # Thanks to Rod Hyde, who answered the question, "How do you convert a
     # python time.struct_time object into a datetime object?" at StackOverflow.
     # <http://stackoverflow.com/questions/1697815/how-do-you-convert-a-python-time-struct-time-object-into-a-datetime-object>
-    print string
-    struct = time.strptime(string, "%A, %B %d, %Y At %I:%M %p ")
-    seconds_since_the_epoch = time.mktime(struct)
-    return datetime.datetime.fromtimestamp(seconds_since_the_epoch)
+
+    struct = time.strptime(string, "%A, %B %d, %Y At %I:%M %p")
+    timestamp = time.mktime(struct) # in seconds since the epoch
+
+    # Problem: These times are in whatever timezone New Jersey is currently in.
+    # One solution would be to take the datetime object (created below) and
+    # tell it that it's in EST or EDT. But I don't know how to do that. So I'll
+    # adopt the following hacky solution: Convert immediately to UTC.
+    if time.daylight:
+        timestamp = timestamp + 60*60*4
+    else:
+        timestamp = timestamp + 60*60*5
+    datetime = datetime.datetime.fromtimestamp(timestamp)
+    return 
 
 for event_dict in events:
     event = Event()
