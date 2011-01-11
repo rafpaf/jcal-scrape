@@ -2,6 +2,6 @@ This code exports data out of a JCal Pro calendar. At the moment, it's just writ
 
 ## Configuration
 
- mv default-config.py config.py
+`mv default-config.py config.py`
 
-Edit `config.py` to reflect where you want to put the ical file (the output).
+Then edit `config.py` to reflect where you want to put the ical file (the output).
