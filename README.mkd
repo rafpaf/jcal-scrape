@@ -1,6 +1,7 @@
 This code exports data out of a JCal Pro calendar. At the moment, it's just written for (and hard-codes a reference to) one particular website, http://philosophy.princeton.edu, but I imagine it could easily be generalized.
 
-== Install ==
+## Configuration
+
  mv default-config.py config.py
 
 Edit `config.py` to reflect where you want to put the ical file (the output).
